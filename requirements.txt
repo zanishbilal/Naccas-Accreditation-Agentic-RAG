@@ -1,0 +1,13 @@
+pinecone
+langchain-core
+bitsandbytes
+transformers
+accelerate
+langchain-huggingface
+langchain
+langchain-community
+pypdf
+langchain-groq
+langgraph
+langchain-text-splitters
+langchain_pinecone
