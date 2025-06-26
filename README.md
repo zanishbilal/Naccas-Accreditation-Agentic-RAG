@@ -9,6 +9,7 @@ A Streamlit-based chatbot application that helps users query NACCAS policies usi
 - **Retrieval-Augmented Generation**: Uses Pinecone vector database for context retrieval
 - **Multi-session Support**: Maintain multiple chat sessions
 - **Public Access**: Integrated with ngrok for public URL access
+- **Making database (optional)**: You can use either of the database making files to create a database if you havent created one
 
 ## Project Structure
 
