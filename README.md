@@ -133,5 +133,4 @@ If you experience memory issues, try:
 4. Submit a pull request
 
 ## License
-
-[Add your license information here]
+to be decided
