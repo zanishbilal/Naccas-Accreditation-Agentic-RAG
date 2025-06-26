@@ -4,13 +4,14 @@ langchain
 groq
 pydantic
 langchain-pinecone
-pinecone-client
+pinecone
 langchain-core
 bitsandbytes
 transformers
 accelerate
 langchain-huggingface
 langchain-community
+langchain-experimental
 pypdf
 langgraph
 langchain-text-splitters
