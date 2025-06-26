@@ -1,0 +1,163 @@
+# =================================
+# NACCAS Policy Assistant - .gitignore
+# =================================
+
+# ❌ NEVER COMMIT THESE - API Keys & Secrets
+.env
+.env.local
+.env.production
+.env.staging
+*.key
+config_local.py
+secrets.json
+
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.pyc
+
+# 📦 Package Managers
+pip-log.txt
+pip-delete-this-directory.txt
+Pipfile.lock
+poetry.lock
+.pdm.toml
+__pypackages__/
+
+# 🧪 Testing & Coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+.pytest/
+
+# 📚 Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+notebooks/
+.jupyter/
+
+# 🐍 Python Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+.pyenv
+
+# 💻 IDEs & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.spyderproject
+.spyproject
+.ropeproject
+
+# 🖥️ Operating Systems
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# 🚀 Streamlit Specific
+.streamlit/
+.streamlit/secrets.toml
+
+# 🤖 ML/AI Models & Data
+models/
+data/
+datasets/
+cache/
+*.pkl
+*.pickle
+*.model
+*.bin
+*.pt
+*.pth
+*.h5
+*.hdf5
+embeddings/
+vector_store/
+checkpoints/
+
+# 📊 LangChain & Vector DBs
+.chroma/
+.faiss/
+.weaviate/
+langchain_cache/
+
+# 🌐 Web & Deployment
+node_modules/
+.next/
+.nuxt/
+.vercel/
+.netlify/
+
+# 📝 Logs & Temporary Files
+*.log
+logs/
+temp/
+tmp/
+*.tmp
+*.temp
+
+# 🔧 System & Build Files
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+
+# 📋 Documentation Build
+/site
+docs/_build/
+
+# 🗂️ Project Specific
+uploads/
+downloads/
+output/
+results/
+experiments/
+backup/
+
+# 🔐 ngrok
+ngrok
+*.ngrok
