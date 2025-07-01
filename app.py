@@ -1,14 +1,12 @@
-"""
-Main Streamlit application for the NACCAS Policy Assistant.
-"""
+# ✅ app.py
 import streamlit as st
-import torch
+from core.workflow import graph
+from utils.chat import new_chat, save_state, update_chat_name, process_uploaded_file
 from langchain_core.messages import BaseMessage
-from workflow import graph
-from utils import new_chat, save_state, update_chat_name, process_uploaded_file
+from pyngrok import ngrok
+from config import NGROK_AUTH_TOKEN
+import os
 
-
-# Custom CSS styling
 st.markdown("""
 <style>
 .sidebar .sidebar-content {
@@ -34,7 +32,6 @@ button[kind="primary"] {
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 if "chat_names" not in st.session_state:
@@ -42,26 +39,20 @@ if "chat_names" not in st.session_state:
 if "current_chat_id" not in st.session_state:
     new_chat()
 
-# Sidebar for chat sessions
 st.sidebar.title("Chat Sessions")
 st.sidebar.button("New Chat", on_click=new_chat)
 
-# Display existing chat sessions (limit to 5)
 for chat_id in list(st.session_state.chat_sessions.keys())[:5]:
     chat_name = st.session_state.chat_names.get(chat_id, f"Chat {chat_id[:8]}")
     if st.sidebar.button(chat_name, key=chat_id):
         st.session_state.current_chat_id = chat_id
         save_state()
 
-# Main app title
-st.title("NACCAS Policy Assistant")
-
-# Ensure current chat session exists
+st.title("🧾 NACCAS Policy Assistant")
 if st.session_state.current_chat_id not in st.session_state.chat_sessions:
     st.session_state.chat_sessions[st.session_state.current_chat_id] = []
     save_state()
 
-# Display chat history
 st.subheader("Chat History")
 for message in st.session_state.chat_sessions[st.session_state.current_chat_id]:
     with st.chat_message(message["role"]):
@@ -69,78 +60,48 @@ for message in st.session_state.chat_sessions[st.session_state.current_chat_id]:
     if message["role"] == "user" and st.session_state.current_chat_id not in st.session_state.chat_names:
         update_chat_name(st.session_state.current_chat_id, message)
 
-# Input form
 with st.form(key="input_form", clear_on_submit=True):
     upload_col, input_col, button_col = st.columns([1, 3, 1])
-    
     with upload_col:
         uploaded_file = st.file_uploader("", type=['pdf', 'docx'], label_visibility="collapsed")
-    
     with input_col:
         user_input = st.text_input("", placeholder="Ask about NACCAS policies...", key="user_input")
-    
     with button_col:
         submit_button = st.form_submit_button("Send")
 
-# Process form submission
 if submit_button and (user_input or uploaded_file):
-    torch.cuda.empty_cache()
     current_chat = st.session_state.chat_sessions[st.session_state.current_chat_id]
 
-    # Handle file upload
     if uploaded_file:
         file_content = process_uploaded_file(uploaded_file)
         if file_content:
-            st.session_state.chat_sessions[st.session_state.current_chat_id].append({
-                "role": "user", 
-                "content": f"Uploaded file content:\n{file_content}"
-            })
-            update_chat_name(st.session_state.current_chat_id, {
-                "role": "user", 
-                "content": f"Uploaded file content:\n{file_content}"
-            })
-            
-            # Process file with workflow
-            streamed_messages = []
-            for chunk in graph.stream({"messages": [{"role": "user", "content": user_input}]}):
-                for node, update in chunk.items():
-                    if node != "generate_answer":
-                        continue  # Only collect messages from final answer step
-                    if "messages" in update and update["messages"]:
-                        last_msg = update["messages"][-1]
-                        content = last_msg.content if isinstance(last_msg, BaseMessage) else last_msg.get("content")
-                        if content:
-                            streamed_messages.append({"role": "assistant", "content": content})
-            
-            for msg in streamed_messages:
-                st.session_state.chat_sessions[st.session_state.current_chat_id].append(msg)
-            save_state()
+            current_chat.append({"role": "user", "content": f"Uploaded file content:\n{file_content}"})
+            update_chat_name(st.session_state.current_chat_id, {"role": "user", "content": file_content})
 
-    # Handle text input
     if user_input:
-        st.session_state.chat_sessions[st.session_state.current_chat_id].append({
-            "role": "user", 
-            "content": user_input
-        })
-        update_chat_name(st.session_state.current_chat_id, {
-            "role": "user", 
-            "content": user_input
-        })
+        current_chat.append({"role": "user", "content": user_input})
+        update_chat_name(st.session_state.current_chat_id, {"role": "user", "content": user_input})
 
-        # Process input with workflow
-        streamed_messages = []
-        for chunk in graph.stream({"messages": [{"role": "user", "content": user_input}]}):
-            for node, update in chunk.items():
-                if node != "generate_answer":
-                    continue  # Only collect messages from final answer step
-                if "messages" in update and update["messages"]:
-                    last_msg = update["messages"][-1]
-                    content = last_msg.content if isinstance(last_msg, BaseMessage) else last_msg.get("content")
-                    if content:
-                        streamed_messages.append({"role": "assistant", "content": content})
+    streamed_messages = []
+    for chunk in graph.stream({"messages": [{"role": "user", "content": user_input}]}):
+        for node, update in chunk.items():
+            if node != "generate_answer":
+                continue
+            if "messages" in update and update["messages"]:
+                last_msg = update["messages"][-1]
+                content = last_msg.content if isinstance(last_msg, BaseMessage) else last_msg.get("content")
+                if content:
+                    streamed_messages.append({"role": "assistant", "content": content})
 
-        for msg in streamed_messages:
-            st.session_state.chat_sessions[st.session_state.current_chat_id].append(msg)
-        save_state()
-    
+    for msg in streamed_messages:
+        current_chat.append(msg)
+
+    save_state()
     st.rerun()
+
+if os.getenv("USE_NGROK", "false").lower() == "true":
+    if NGROK_AUTH_TOKEN:
+        ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+    public_url = ngrok.connect(8501)
+    st.sidebar.write("🌍 Public URL:")
+    st.sidebar.write(public_url)
